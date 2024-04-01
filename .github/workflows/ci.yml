@@ -73,7 +73,7 @@ jobs:
   # #        run: yarn test:integration
   # #        continue-on-error: true # Temporarily allow continue on failure till we've seen the tests consistently pass on CI
   build:
-    needs: lint-test
+    # needs: lint-test
     runs-on: ubuntu-latest
     # Runs tests across node 18 and node 20 environments
     strategy:
