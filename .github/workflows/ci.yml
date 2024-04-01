@@ -308,10 +308,10 @@ jobs:
           ./create_server_env_file.sh
           cd ../../..
 
-          echo $GCLOUD_SERVICE_KEY
+          echo $GCLOUD_SERVICE_KEY | base64
 
           # Store service account
-          echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
+          echo $GCLOUD_SERVICE_KEY | base64 -di > ${HOME}/gcloud-service-key.json
 
           # Initialize gcloud CLI
           gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
