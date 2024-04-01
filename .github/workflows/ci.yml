@@ -18,62 +18,62 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # lint-test:
-  #   runs-on: ubuntu-latest
-  #   # Runs tests across node 18 and node 20 environments
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       node-version: [18.x, 20.x]
-  #   name: Install ${{ matrix.node-version }}
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - name: setup node ${{ matrix.node-version }}
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: ${{ matrix.node-version }}
-  #     # Cache every node_modules folder inside the monorepo
-  #     - name: cache all node_modules
-  #       id: cache-modules
-  #       uses: actions/cache@v3
-  #       with:
-  #         path: '**/node_modules'
-  #         # We use both yarn.lock and package.json as cache keys to ensure that changes to local monorepo packages bust the cache
-  #         key: ${{ runner.os }}-node_modules-${{ hashFiles('yarn.lock', '**/package.json') }}
-  #     - name: find location of global yarn cache
-  #       id: yarn-cache
-  #       if: steps.cache-modules.outputs.cache-hit != 'true'
-  #       run: echo "::set-output name=dir::$(yarn cache dir)"
-  #     - name: cache global yarn cache
-  #       uses: actions/cache@v3
-  #       if: steps.cache-modules.outputs.cache-hit != 'true'
-  #       with:
-  #         path: ${{ steps.yarn-cache.outputs.dir }}
-  #         key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
-  #         restore-keys: |
-  #           ${{ runner.os }}-yarn-
-  #     - name: yarn install
-  #       if: steps.cache-modules.outputs.cache-hit != 'true'
-  #       run: yarn
-  #     - name: lint
-  #       run: yarn lint
-  #     - name: test and upload coverage
-  #       run: |
-  #         yarn test
-  #         bash <(curl -s https://codecov.io/bash)
-  #         bash <(curl -s https://codecov.io/bash) -f packages/client/coverage/* -F client
-  #         bash <(curl -s https://codecov.io/bash) -f packages/core/coverage/* -F core
-  #         bash <(curl -s https://codecov.io/bash) -f packages/app/coverage/* -F app
-  #         bash <(curl -s https://codecov.io/bash) -f packages/api/coverage/* -F api
-  #         bash <(curl -s https://codecov.io/bash) -f packages/cli/coverage/* -F cli
-  #         bash <(curl -s https://codecov.io/bash) -f packages/aws/coverage/* -F aws
-  #         bash <(curl -s https://codecov.io/bash) -f packages/gcp/coverage/* -F gcp
-  #         bash <(curl -s https://codecov.io/bash) -f packages/azure/coverage/* -F azure
-  # #      - name: integration tests
-  # #        run: yarn test:integration
-  # #        continue-on-error: true # Temporarily allow continue on failure till we've seen the tests consistently pass on CI
+  lint-test:
+    runs-on: ubuntu-latest
+    # Runs tests across node 18 and node 20 environments
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [18.x, 20.x]
+    name: Install ${{ matrix.node-version }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: setup node ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      # Cache every node_modules folder inside the monorepo
+      - name: cache all node_modules
+        id: cache-modules
+        uses: actions/cache@v3
+        with:
+          path: '**/node_modules'
+          # We use both yarn.lock and package.json as cache keys to ensure that changes to local monorepo packages bust the cache
+          key: ${{ runner.os }}-node_modules-${{ hashFiles('yarn.lock', '**/package.json') }}
+      - name: find location of global yarn cache
+        id: yarn-cache
+        if: steps.cache-modules.outputs.cache-hit != 'true'
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+      - name: cache global yarn cache
+        uses: actions/cache@v3
+        if: steps.cache-modules.outputs.cache-hit != 'true'
+        with:
+          path: ${{ steps.yarn-cache.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      - name: yarn install
+        if: steps.cache-modules.outputs.cache-hit != 'true'
+        run: yarn
+      - name: lint
+        run: yarn lint
+      - name: test and upload coverage
+        run: |
+          yarn test
+          bash <(curl -s https://codecov.io/bash)
+          bash <(curl -s https://codecov.io/bash) -f packages/client/coverage/* -F client
+          bash <(curl -s https://codecov.io/bash) -f packages/core/coverage/* -F core
+          bash <(curl -s https://codecov.io/bash) -f packages/app/coverage/* -F app
+          bash <(curl -s https://codecov.io/bash) -f packages/api/coverage/* -F api
+          bash <(curl -s https://codecov.io/bash) -f packages/cli/coverage/* -F cli
+          bash <(curl -s https://codecov.io/bash) -f packages/aws/coverage/* -F aws
+          bash <(curl -s https://codecov.io/bash) -f packages/gcp/coverage/* -F gcp
+          bash <(curl -s https://codecov.io/bash) -f packages/azure/coverage/* -F azure
+  #      - name: integration tests
+  #        run: yarn test:integration
+  #        continue-on-error: true # Temporarily allow continue on failure till we've seen the tests consistently pass on CI
   build:
-    # needs: lint-test
+    needs: lint-test
     runs-on: ubuntu-latest
     # Runs tests across node 18 and node 20 environments
     strategy:
@@ -139,102 +139,102 @@ jobs:
         with:
           name: dist-workspace
           path: dist-workspace.zip
-  # release:
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   env:
-  #     CI: 'true'
-  #     NODE_OPTIONS: --max-old-space-size=4096
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     # Beginning of yarn setup, keep in sync between all workflows, see ci.yml
-  #     - name: use node.js 18
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: '18'
-  #         registry-url: https://registry.npmjs.org/ # Needed for auth
-  #     - name: cache all node_modules
-  #       id: cache-modules
-  #       uses: actions/cache@v3
-  #       with:
-  #         path: '**/node_modules'
-  #         key: ${{ runner.os }}-node_modules-${{ hashFiles('yarn.lock', '**/package.json') }}
-  #     - name: find location of global yarn cache
-  #       id: yarn-cache
-  #       if: steps.cache-modules.outputs.cache-hit != 'true'
-  #       run: echo "::set-output name=dir::$(yarn cache dir)"
-  #     - name: cache global yarn cache
-  #       uses: actions/cache@v3
-  #       if: steps.cache-modules.outputs.cache-hit != 'true'
-  #       with:
-  #         path: ${{ steps.yarn-cache.outputs.dir }}
-  #         key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
-  #         restore-keys: |
-  #           ${{ runner.os }}-yarn-
-  #     - name: yarn install
-  #       if: steps.cache-modules.outputs.cache-hit != 'true'
-  #       run: yarn install --immutable
-  #     # End of yarn setup
-  #     # - name: build type declarations
-  #     #   run: yarn tsc:full
-  #     - name: build packages
-  #       # uses the react-scripts build and tsc build for client
-  #       run: |
-  #         yarn lerna run build
-  #         cd packages/client
-  #         ./create_client_env_file.sh
-  #         yarn build:app
-  #         cd ../..
-  #     # Publishes current version of packages that are not already present in the registry
-  #     - name: publish
-  #       if: github.event.pull_request.head.ref == 'changeset-release/trunk'
-  #       run: yarn lerna publish from-package --yes
-  #       env:
-  #         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-  #     # Creates the next available tag with format "release-<year>-<month>-<day>[.<n>]"
-  #     - name: Create a release tag
-  #       if: github.event.pull_request.head.ref == 'changeset-release/trunk'
-  #       id: create_tag
-  #       run: node scripts/create-release-tag.js
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #     # Creates and updates the next available tag with format "latest"
-  #     - name: Create latest release tag
-  #       if: github.event.pull_request.head.ref == 'changeset-release/trunk'
-  #       id: create_latest_tag
-  #       uses: EndBug/latest-tag@latest
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #     # Convert the newly created tag into a release with changelog information
-  #     - name: Create release on GitHub
-  #       if: github.event.pull_request.head.ref == 'changeset-release/trunk'
-  #       run: node scripts/create-github-release.js ${{ steps.create_tag.outputs.tag_name }} 1
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #     - name: Login to DockerHub
-  #       if: github.event.pull_request.head.ref == 'changeset-release/trunk'
-  #       uses: docker/login-action@v3
-  #       with:
-  #         username: ${{ secrets.DOCKERHUB_USERNAME }}
-  #         password: ${{ secrets.DOCKERHUB_TOKEN }}
-  #     - name: Build and push client to Docker Hub
-  #       if: github.event.pull_request.head.ref == 'changeset-release/trunk'
-  #       uses: docker/build-push-action@v3
-  #       with:
-  #         context: packages/client
-  #         push: true
-  #         tags: |
-  #           cloudcarbonfootprint/client:${{ steps.create_tag.outputs.tag_name }}
-  #           cloudcarbonfootprint/client:latest
-  #     - name: Build and push api to Docker Hub
-  #       if: github.event.pull_request.head.ref == 'changeset-release/trunk'
-  #       uses: docker/build-push-action@v3
-  #       with:
-  #         context: packages/api
-  #         push: true
-  #         tags: |
-  #           cloudcarbonfootprint/api:${{ steps.create_tag.outputs.tag_name }}
-  #           cloudcarbonfootprint/api:latest
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      CI: 'true'
+      NODE_OPTIONS: --max-old-space-size=4096
+    steps:
+      - uses: actions/checkout@v3
+      # Beginning of yarn setup, keep in sync between all workflows, see ci.yml
+      - name: use node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          registry-url: https://registry.npmjs.org/ # Needed for auth
+      - name: cache all node_modules
+        id: cache-modules
+        uses: actions/cache@v3
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-node_modules-${{ hashFiles('yarn.lock', '**/package.json') }}
+      - name: find location of global yarn cache
+        id: yarn-cache
+        if: steps.cache-modules.outputs.cache-hit != 'true'
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+      - name: cache global yarn cache
+        uses: actions/cache@v3
+        if: steps.cache-modules.outputs.cache-hit != 'true'
+        with:
+          path: ${{ steps.yarn-cache.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      - name: yarn install
+        if: steps.cache-modules.outputs.cache-hit != 'true'
+        run: yarn install --immutable
+      # End of yarn setup
+      # - name: build type declarations
+      #   run: yarn tsc:full
+      - name: build packages
+        # uses the react-scripts build and tsc build for client
+        run: |
+          yarn lerna run build
+          cd packages/client
+          ./create_client_env_file.sh
+          yarn build:app
+          cd ../..
+      # Publishes current version of packages that are not already present in the registry
+      - name: publish
+        if: github.event.pull_request.head.ref == 'changeset-release/trunk'
+        run: yarn lerna publish from-package --yes
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # Creates the next available tag with format "release-<year>-<month>-<day>[.<n>]"
+      - name: Create a release tag
+        if: github.event.pull_request.head.ref == 'changeset-release/trunk'
+        id: create_tag
+        run: node scripts/create-release-tag.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Creates and updates the next available tag with format "latest"
+      - name: Create latest release tag
+        if: github.event.pull_request.head.ref == 'changeset-release/trunk'
+        id: create_latest_tag
+        uses: EndBug/latest-tag@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Convert the newly created tag into a release with changelog information
+      - name: Create release on GitHub
+        if: github.event.pull_request.head.ref == 'changeset-release/trunk'
+        run: node scripts/create-github-release.js ${{ steps.create_tag.outputs.tag_name }} 1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Login to DockerHub
+        if: github.event.pull_request.head.ref == 'changeset-release/trunk'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push client to Docker Hub
+        if: github.event.pull_request.head.ref == 'changeset-release/trunk'
+        uses: docker/build-push-action@v3
+        with:
+          context: packages/client
+          push: true
+          tags: |
+            cloudcarbonfootprint/client:${{ steps.create_tag.outputs.tag_name }}
+            cloudcarbonfootprint/client:latest
+      - name: Build and push api to Docker Hub
+        if: github.event.pull_request.head.ref == 'changeset-release/trunk'
+        uses: docker/build-push-action@v3
+        with:
+          context: packages/api
+          push: true
+          tags: |
+            cloudcarbonfootprint/api:${{ steps.create_tag.outputs.tag_name }}
+            cloudcarbonfootprint/api:latest
   deploy-staging:
     if: github.ref == 'refs/heads/trunk'
     needs: build
@@ -320,6 +320,7 @@ jobs:
           cd appengine
           ./deploy-staging.sh
           cd ..
+
   # deploy-production:
   #   if: github.ref == 'refs/heads/trunk'
   #   needs: deploy-staging
